@@ -1,7 +1,6 @@
 package org.example;
 
 import jade.core.AID;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.example.helper.*;
 import org.pcap4j.core.PacketListener;
@@ -15,22 +14,17 @@ import java.util.concurrent.*;
 
 @Slf4j
 public class AgentDetector {
-
     public static final String ADD="add", REMOVE="remove";
-
-    @Setter
-    private String ifaceName = "\\Device\\NPF_Loopback";
-    @Setter
-    private long timeDelay = 1000;
-    private long timeDelayRemove = 100;
-    private AID myAgent;
-    private byte[] packet;
-    private long port;
+    private final String ifaceName = "\\Device\\NPF_Loopback";
+    private final long timeDelay = 100;
+    private final AID myAgent;
+    private final byte[] packet;
+    private final long port;
     private ScheduledFuture<?> sendTask;
-    private ScheduledExecutorService ses = new ScheduledThreadPoolExecutor(3);
-    private PcapHelper pcapHelper = new PcapHelper(ifaceName, 50);
-    private Map<AID, Date> activeAgents = new ConcurrentHashMap<>();
-    private List<DetectorListener> subscribers = new ArrayList<>();
+    private final ScheduledExecutorService ses = new ScheduledThreadPoolExecutor(3);
+    private final PcapHelper pcapHelper = new PcapHelper(ifaceName, 50);
+    private final Map<AID, Date> activeAgents = new ConcurrentHashMap<>();
+    private final List<DetectorListener> subscribers = new ArrayList<>();
 
 
     public AgentDetector(AID myAgent, long port) {
@@ -43,14 +37,11 @@ public class AgentDetector {
                 .build();
     }
 
-
-    // обнаружение других агентов, должно выполняться в своем потоке (ScheduleExecutor)
     public void startDiscovering() {
         log.debug("Discovering start");
         pcapHelper.startPacketsCapturing(port,
                 new PListener(ifaceName, myAgent, activeAgents, subscribers), ses);
-        ses.scheduleWithFixedDelay(this::deadAgentRemoving, 0, timeDelayRemove, TimeUnit.MILLISECONDS);
-
+        ses.scheduleWithFixedDelay(this::deadAgentRemoving, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     public void startSending() {
@@ -75,19 +66,16 @@ public class AgentDetector {
         return new ArrayList<>(activeAgents.keySet());
     }
 
-    public void subsribeOnChange(DetectorListener subscriber) {
+    public void subscribeOnChange(DetectorListener subscriber) {
         subscribers.add(subscriber);
     }
 
     public void stopSending() {
         log.debug("Sending stop");
         sendTask.cancel(true);
-
     }
 
-
     private class PListener implements PacketListener {
-
         private AID aid;
         private Map<AID, Date> activeAgent;
         private final String iface;

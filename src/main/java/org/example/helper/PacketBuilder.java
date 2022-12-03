@@ -2,8 +2,6 @@ package org.example.helper;
 
 import jade.core.AID;
 import lombok.SneakyThrows;
-import org.pcap4j.packet.Packet;
-
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
@@ -50,7 +48,6 @@ public class PacketBuilder {
         if (portToSend < 1000){
             throw new RuntimeException("Port must be greater than 1000");
         }
-
 
         /* UDP Header Length = 8 bytes
         * 4 byte - port
