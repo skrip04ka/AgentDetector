@@ -1,4 +1,4 @@
-package org.example;
+package org.example.helper;
 
 import com.sun.jna.NativeLibrary;
 import lombok.SneakyThrows;
@@ -48,12 +48,12 @@ public class PcapHelper {
      * @return - task of packets capturing
      * @throws PcapNativeException  if pcap can not open found interface handle
      */
-    public ScheduledFuture<?> startPacketsCapturing(int port,  PacketListener pl, ScheduledExecutorService ses) {
+    public ScheduledFuture<?> startPacketsCapturing(long port,  PacketListener pl, ScheduledExecutorService ses) {
         return startCapturingTask(port, pl, ses, pcapHandle);
 
     }
 
-    private ScheduledFuture<?> startCapturingTask(int port, PacketListener pl, ScheduledExecutorService ses, PcapHandle pcapHandle) {
+    private ScheduledFuture<?> startCapturingTask(long port, PacketListener pl, ScheduledExecutorService ses, PcapHandle pcapHandle) {
         return ses.schedule(() -> {
             try {
                 pcapHandle.setFilter("ip proto \\udp && dst port " + port, BpfProgram.BpfCompileMode.NONOPTIMIZE);
@@ -93,10 +93,11 @@ public class PcapHelper {
             }
         }
         if (chosenIface == null) {
-            log.error("Failed to find iface with name{}  ethernet available interface are : {}", ifaceName, foundIfaces.stream().map(el -> el.getName() + el.getAddresses()).collect(Collectors.toList()));
+            log.error("Failed to find iface with name {}  ethernet available interface are : {}", ifaceName, foundIfaces.stream().map(el -> el.getName() + el.getAddresses()).collect(Collectors.toList()));
             throw new RuntimeException("Can not find iface with given name "+ ifaceName);
         }
 
         return chosenIface.openLive(65536, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, T / 2);
+
     }
 }

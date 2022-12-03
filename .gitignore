@@ -4,7 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-.idea
+/.idea
 *.iws
 *.iml
 *.ipr
@@ -35,4 +35,4 @@ build/
 .DS_Store
 
 ### other ###
-dz_2_1.bin
+dz_2_1.txt
