@@ -36,8 +36,6 @@ public class MasStarter {
     private static Properties parseCmdLineArgs(Map<String, String> createdAgents) {
         Properties props = new Properties();
         props.setProperty("gui", "true");
-//        props.setProperty("services",
-//                "jade.core.event.NotificationService;jade.core.messaging.TopicManagementService");
 
         StringBuilder angets = new StringBuilder();
         for (Map.Entry<String, String> entry : createdAgents.entrySet()) {

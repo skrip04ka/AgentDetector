@@ -1,14 +1,10 @@
 package org.example.helper;
 
 import lombok.SneakyThrows;
-import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 
 public class JsonParser {
     private static ObjectMapper mapper = new ObjectMapper();
-    static {
-        mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    }
 
     private JsonParser (){}
 

@@ -18,7 +18,7 @@ public class AgentDetector {
     private final String ifaceName = "\\Device\\NPF_Loopback";
     private final long timeDelay = 100;
     private final AID myAgent;
-    private final byte[] packet;
+    private byte[] packet;
     private final long port;
     private ScheduledFuture<?> sendTask;
     private final ScheduledExecutorService ses = new ScheduledThreadPoolExecutor(3);
@@ -31,9 +31,9 @@ public class AgentDetector {
         this.port = port;
         this.myAgent = myAgent;
         packet = new PacketBuilder()
-                .addHeader(ifaceName, "127.0.0.1","255.255.255.255")
+                .addHeader(ifaceName)
                 .addUdpPart(port)
-                .addPayload(myAgent)
+                .addPayload(JsonParser.dataToString(new AidData(myAgent)))
                 .build();
     }
 
@@ -41,7 +41,7 @@ public class AgentDetector {
         log.debug("Discovering start");
         pcapHelper.startPacketsCapturing(port,
                 new PListener(ifaceName, myAgent, activeAgents, subscribers), ses);
-        ses.scheduleWithFixedDelay(this::deadAgentRemoving, 0, 100, TimeUnit.MILLISECONDS);
+        ses.scheduleWithFixedDelay(this::deadAgentRemoving, 0, 50, TimeUnit.MILLISECONDS);
     }
 
     public void startSending() {
@@ -93,7 +93,7 @@ public class AgentDetector {
         @Override
         public void gotPacket(Packet packet) {
             String packetData = parse(packet.getRawData());
-            AID otherAid = JsonParser.parseData(packetData, AID.class);
+            AID otherAid = JsonParser.parseData(packetData, AidData.class).toAid();
             if (!aid.equals(otherAid)) {
                 log.debug("received msg {}", JsonParser.dataToString(otherAid));
                 if (!activeAgent.containsKey(otherAid)) {
