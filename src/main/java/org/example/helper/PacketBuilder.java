@@ -79,7 +79,7 @@ public class PacketBuilder {
             int length = udpPart.length + payload.length;
             for (int i = 4 + addCount, j = 6; i < 6 + addCount; i++, j++) udpPart[i] = longToBytes(length)[j];
             /* Checksum, can be 0x00 if it is not calculated */
-            for (int i = 6 + addCount, j = 8; i < 4 + addCount; i++, j++) udpPart[i] = longToBytes(0x0000)[j];
+            for (int i = 6 + addCount, j = 6; i < 8 + addCount; i++, j++) udpPart[i] = longToBytes(0x0000)[j];
 
             return this;
 

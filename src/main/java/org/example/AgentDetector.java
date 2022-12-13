@@ -21,6 +21,7 @@ public class AgentDetector {
     private byte[] packet;
     private final long port;
     private ScheduledFuture<?> sendTask;
+    private ScheduledFuture<?> discoverTask;
     private final ScheduledExecutorService ses = new ScheduledThreadPoolExecutor(3);
     private final PcapHelper pcapHelper = new PcapHelper(ifaceName, 50);
     private final Map<AID, Date> activeAgents = new ConcurrentHashMap<>();
@@ -33,22 +34,30 @@ public class AgentDetector {
         packet = new PacketBuilder()
                 .addHeader(ifaceName)
                 .addUdpPart(port)
-                .addPayload(JsonParser.dataToString(new AidData(myAgent)))
+                .addPayload(JsonParser.dataToString(new AidDTO(myAgent)))
                 .build();
     }
 
     public void startDiscovering() {
-        log.debug("Discovering start");
-        pcapHelper.startPacketsCapturing(port,
-                new PListener(ifaceName, myAgent, activeAgents, subscribers), ses);
-        ses.scheduleWithFixedDelay(this::deadAgentRemoving, 0, 50, TimeUnit.MILLISECONDS);
+        if (discoverTask == null) {
+            log.debug("Discovering start");
+            discoverTask = pcapHelper.startPacketsCapturing(port,
+                    new PListener(ifaceName, myAgent, activeAgents, subscribers), ses);
+            ses.scheduleWithFixedDelay(this::deadAgentRemoving, 0, 50, TimeUnit.MILLISECONDS);
+        } else {
+            log.warn("Discovering is start");
+        }
     }
 
     public void startSending() {
-        log.debug("Sending start");
-        sendTask = ses.scheduleWithFixedDelay(() -> {
-            pcapHelper.sendPacket(packet);
-        }, 0, timeDelay, TimeUnit.MILLISECONDS);
+        if (sendTask == null || sendTask.isCancelled()) {
+            log.debug("Sending start");
+            sendTask = ses.scheduleWithFixedDelay(() -> {
+                pcapHelper.sendPacket(packet);
+            }, 0, timeDelay, TimeUnit.MILLISECONDS);
+        } else {
+            log.warn("Sending is start");
+        }
     }
 
     private void deadAgentRemoving() {
@@ -93,7 +102,7 @@ public class AgentDetector {
         @Override
         public void gotPacket(Packet packet) {
             String packetData = parse(packet.getRawData());
-            AID otherAid = JsonParser.parseData(packetData, AidData.class).toAid();
+            AID otherAid = JsonParser.parseData(packetData, AidDTO.class).toAid();
             if (!aid.equals(otherAid)) {
                 log.debug("received msg {}", JsonParser.dataToString(otherAid));
                 if (!activeAgent.containsKey(otherAid)) {

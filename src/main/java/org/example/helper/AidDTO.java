@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class AidData {
+public class AidDTO {
 
     private String name;
     private String hap;
     private String[] addressesArray;
 
-    public AidData(AID myAgent) {
+    public AidDTO(AID myAgent) {
         this.name = myAgent.getName();
         this.hap = myAgent.getHap();
         this.addressesArray = myAgent.getAddressesArray();
